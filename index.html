@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>NEJM This Week — Transcript</title>
+<style>
+  :root{
+    --bg-1:#0b1220;
+    --bg-2:#131a2e;
+    --blob-1:#3b82f6;
+    --blob-2:#8b5cf6;
+    --blob-3:#06b6d4;
+    --glass:rgba(255,255,255,.055);
+    --glass-2:rgba(255,255,255,.09);
+    --stroke:rgba(255,255,255,.12);
+    --stroke-soft:rgba(255,255,255,.07);
+    --text:#e8ecf6;
+    --text-dim:#a6b0c6;
+    --text-faint:#7b859c;
+    --accent:#7dd3fc;
+    --accent-2:#c4b5fd;
+    --mark:#fde68a;
+    --shadow:0 18px 50px -12px rgba(0,0,0,.65);
+    --radius:20px;
+    --fs:17px;
+    --measure:70ch;
+  }
+  html[data-theme="light"]{
+    --bg-1:#eef2fb;
+    --bg-2:#e3e9f7;
+    --blob-1:#60a5fa;
+    --blob-2:#a78bfa;
+    --blob-3:#22d3ee;
+    --glass:rgba(255,255,255,.55);
+    --glass-2:rgba(255,255,255,.72);
+    --stroke:rgba(15,23,42,.10);
+    --stroke-soft:rgba(15,23,42,.06);
+    --text:#15203a;
+    --text-dim:#4a5673;
+    --text-faint:#71809c;
+    --accent:#0369a1;
+    --accent-2:#6d28d9;
+    --mark:#fcd34d;
+    --shadow:0 18px 44px -18px rgba(30,41,59,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Inter","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color:var(--text);
+    background:linear-gradient(160deg,var(--bg-1),var(--bg-2) 55%,var(--bg-1));
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---------- ambient background ---------- */
+  .aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;filter:blur(70px);opacity:.62;pointer-events:none;}
+  .aurora span{position:absolute;display:block;border-radius:50%;mix-blend-mode:screen;animation:drift 26s ease-in-out infinite alternate;}
+  html[data-theme="light"] .aurora span{mix-blend-mode:normal;opacity:.5;}
+  .b1{width:46vw;height:46vw;left:-8vw;top:-6vw;background:var(--blob-1);}
+  .b2{width:40vw;height:40vw;right:-10vw;top:18vh;background:var(--blob-2);animation-delay:-9s;}
+  .b3{width:34vw;height:34vw;left:22vw;bottom:-12vw;background:var(--blob-3);animation-delay:-16s;}
+  @keyframes drift{
+    0%{transform:translate3d(0,0,0) scale(1);}
+    50%{transform:translate3d(4vw,-3vh,0) scale(1.12);}
+    100%{transform:translate3d(-3vw,4vh,0) scale(.96);}
+  }
+  .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.16;
+    background-image:radial-gradient(rgba(255,255,255,.35) .5px,transparent .5px);
+    background-size:3px 3px;}
+
+  /* ---------- progress ---------- */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    box-shadow:0 0 14px rgba(125,211,252,.55);transition:width .12s linear;}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1240px;margin:0 auto;padding:34px 22px 90px;}
+  .layout{display:grid;grid-template-columns:262px minmax(0,1fr);gap:28px;align-items:start;}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr;}}
+
+  /* ---------- glass primitive ---------- */
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius);
+    backdrop-filter:blur(18px) saturate(150%);
+    -webkit-backdrop-filter:blur(18px) saturate(150%);
+    box-shadow:var(--shadow);
+  }
+  .glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 40%);}
+
+  /* ---------- hero ---------- */
+  header.hero{position:relative;overflow:hidden;padding:40px 38px 34px;margin-bottom:22px;}
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:.72rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);font-weight:600;
+    padding:7px 14px;border-radius:999px;border:1px solid var(--stroke);
+    background:var(--glass-2);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);
+    animation:pulse 2.1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.8);}}
+  h1{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
+    font-size:clamp(2.1rem,4.6vw,3.35rem);line-height:1.08;margin:18px 0 12px;letter-spacing:-.02em;font-weight:600;}
+  h1 em{font-style:normal;background:linear-gradient(100deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .standfirst{max-width:64ch;color:var(--text-dim);font-size:1.03rem;line-height:1.7;margin:0 0 22px;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-dim);
+    padding:8px 13px;border-radius:999px;border:1px solid var(--stroke-soft);background:var(--glass);}
+  .chip b{color:var(--text);font-weight:600;}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{position:sticky;top:14px;z-index:40;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    padding:12px 14px;margin-bottom:22px;}
+  .search{position:relative;flex:1 1 260px;min-width:200px;}
+  .search input{width:100%;padding:11px 40px 11px 38px;border-radius:12px;color:var(--text);
+    background:var(--glass-2);border:1px solid var(--stroke);font-size:.9rem;outline:none;
+    transition:border-color .2s, box-shadow .2s;font-family:inherit;}
+  .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(125,211,252,.18);}
+  .search input::placeholder{color:var(--text-faint);}
+  .search .icn{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-faint);
+    font-size:.95rem;pointer-events:none;}
+  .search .count{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+    font-size:.72rem;color:var(--text-faint);font-variant-numeric:tabular-nums;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:12px;cursor:pointer;
+    font-size:.84rem;font-weight:500;color:var(--text-dim);font-family:inherit;
+    background:var(--glass);border:1px solid var(--stroke);transition:all .18s ease;}
+  .btn:hover{color:var(--text);background:var(--glass-2);transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.on{color:var(--accent);border-color:var(--accent);}
+  .seg{display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--stroke);background:var(--glass);}
+  .seg button{border:0;background:transparent;color:var(--text-dim);padding:10px 13px;cursor:pointer;
+    font-size:.84rem;font-family:inherit;transition:background .18s,color .18s;}
+  .seg button+button{border-left:1px solid var(--stroke-soft);}
+  .seg button:hover{background:var(--glass-2);color:var(--text);}
+
+  /* ---------- sidebar ---------- */
+  aside{position:sticky;top:88px;padding:20px 8px 20px 20px;max-height:calc(100vh - 120px);overflow:auto;}
+  aside h2{font-size:.7rem;letter-spacing:.17em;text-transform:uppercase;color:var(--text-faint);
+    margin:0 0 14px;font-weight:600;}
+  .toc{list-style:none;margin:0;padding:0;}
+  .toc li{margin:0;}
+  .toc a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--text-dim);
+    font-size:.845rem;line-height:1.45;padding:8px 10px;border-radius:10px;border-left:2px solid transparent;
+    transition:all .18s ease;}
+  .toc a:hover{color:var(--text);background:var(--glass);}
+  .toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--glass-2);}
+  .toc .t{font-variant-numeric:tabular-nums;font-size:.72rem;color:var(--text-faint);flex:0 0 42px;}
+  aside::-webkit-scrollbar{width:6px;}
+  aside::-webkit-scrollbar-thumb{background:var(--stroke);border-radius:99px;}
+  @media (max-width:1000px){aside{position:relative;top:0;max-height:none;margin-bottom:22px;}}
+
+  /* ---------- transcript ---------- */
+  main{min-width:0;}
+  section.part{position:relative;padding:30px 34px 26px;margin-bottom:20px;scroll-margin-top:96px;}
+  .part-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:6px;}
+  .part-head .translate-btn{margin-left:auto;}
+  .translation{margin:16px 0 4px;padding:18px 20px;border:1px solid var(--stroke);
+    border-radius:14px;background:var(--glass-2);direction:rtl;text-align:right;}
+  .translation[hidden]{display:none;}
+  .translation h4{margin:0 0 8px;color:var(--accent);font-size:.8rem;letter-spacing:.08em;font-weight:700;}
+  .translation p{margin:0;color:var(--text);font-family:Tahoma,"Segoe UI",sans-serif;font-size:var(--fs);line-height:1.95;}
+  .translation p+p{margin-top:1em;}
+  .translate-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  .tag{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    padding:5px 11px;border-radius:999px;border:1px solid var(--stroke);background:var(--glass-2);color:var(--accent-2);}
+  .tag.research{color:var(--accent);}
+  .tag.perspective{color:#f0abfc;}
+  html[data-theme="light"] .tag.perspective{color:#a21caf;}
+  .tag.case{color:#fca5a5;}
+  html[data-theme="light"] .tag.case{color:#b91c1c;}
+  h3{font-family:Georgia,"Iowan Old Style",serif;font-size:1.42rem;line-height:1.3;margin:6px 0 4px;
+    font-weight:600;letter-spacing:-.01em;}
+  .byline{color:var(--text-faint);font-size:.86rem;margin:0 0 18px;font-style:italic;}
+  hr.rule{border:0;height:1px;background:linear-gradient(90deg,var(--stroke),transparent);margin:0 0 18px;}
+
+  .cue{display:grid;grid-template-columns:76px minmax(0,1fr);gap:18px;padding:12px 0;
+    border-top:1px solid var(--stroke-soft);}
+  .cue:first-of-type{border-top:0;}
+  .cue:hover .stamp{color:var(--accent);border-color:var(--accent);}
+  .stamp{align-self:start;position:sticky;top:96px;font-variant-numeric:tabular-nums;font-size:.75rem;
+    color:var(--text-faint);background:var(--glass);border:1px solid var(--stroke-soft);
+    border-radius:9px;padding:5px 0;text-align:center;cursor:pointer;
+    transition:color .18s,border-color .18s;user-select:none;}
+  .cue p{margin:0;font-family:Georgia,"Iowan Old Style",serif;font-size:var(--fs);line-height:1.82;
+    color:var(--text);max-width:var(--measure);letter-spacing:.002em;}
+  .cue p+p{margin-top:.85em;}
+  .spk{font-family:"Inter",system-ui,sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;display:block;margin-bottom:6px;}
+  .cue.q p{border-left:2px solid var(--accent-2);padding-left:16px;font-style:italic;color:var(--text-dim);}
+  mark{background:var(--mark);color:#1a1205;border-radius:3px;padding:0 2px;}
+  mark.cur{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .lead::first-letter{font-size:3.1em;float:left;line-height:.86;padding:4px 10px 0 0;
+    font-family:Georgia,serif;color:var(--accent);}
+
+  .pull{margin:20px 0;padding:20px 24px;border-radius:16px;border:1px solid var(--stroke);
+    background:var(--glass-2);position:relative;}
+  .pull p{margin:0;font-family:Georgia,serif;font-size:1.06rem;line-height:1.7;color:var(--text);}
+  .pull .src{display:block;margin-top:10px;font-family:"Inter",sans-serif;font-size:.78rem;
+    color:var(--text-faint);letter-spacing:.03em;}
+
+  .key{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0 4px;}
+  .key div{padding:14px 16px;border-radius:14px;border:1px solid var(--stroke-soft);background:var(--glass);}
+  .key dt{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px;}
+  .key dd{margin:0;font-size:.95rem;line-height:1.5;color:var(--text);font-weight:500;}
+
+  footer.end{padding:28px 34px;text-align:center;}
+  footer.end p{margin:0 0 6px;color:var(--text-dim);font-size:.9rem;}
+  footer.end a{color:var(--accent);text-decoration:none;}
+  footer.end a:hover{text-decoration:underline;}
+
+  .top{position:fixed;right:22px;bottom:22px;width:46px;height:46px;border-radius:50%;z-index:50;
+    display:grid;place-items:center;cursor:pointer;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;}
+  .top.show{opacity:1;pointer-events:auto;}
+  .top:hover{transform:translateY(-3px);}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,18px);z-index:70;
+    padding:11px 20px;border-radius:12px;font-size:.85rem;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media print{
+    .aurora,.grain,.toolbar,aside,.top,.progress,.toast{display:none!important;}
+    body{background:#fff;color:#000;}
+    .glass,section.part,header.hero{background:#fff;border:0;box-shadow:none;backdrop-filter:none;}
+    .layout{display:block;}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+<div class="aurora"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+<div class="grain"></div>
+<div class="progress" id="prog"></div>
+
+<div class="wrap">
+
+  <header class="hero glass">
+    <span class="kicker"><i class="dot"></i> Audio Transcript · Weekly Digest</span>
+    <h1>NEJM <em>This Week</em><br>Issue Summary &amp; Perspectives</h1>
+    <p class="standfirst">A complete, timestamped transcript covering colorectal cancer surveillance, metabolic acidosis in critical illness, pediatric leukemia, food allergy prevention, esophageal cancer, a Massachusetts General Hospital case record, and five perspective essays.</p>
+    <div class="meta">
+      <span class="chip">Host <b>Dr. Michael Bierer</b></span>
+      <span class="chip">Runtime <b>≈ 22 min</b></span>
+      <span class="chip">Segments <b>13</b></span>
+      <span class="chip">Speakers <b>1</b></span>
+      <span class="chip">Source <b>NEJM.org</b></span>
+    </div>
+  </header>
+
+  <div class="toolbar glass">
+    <div class="search">
+      <span class="icn">⌕</span>
+      <input id="q" type="search" placeholder="Search the transcript…  (Ctrl + K)" aria-label="Search transcript">
+      <span class="count" id="cnt"></span>
+    </div>
+    <div class="seg" role="group" aria-label="Text size">
+      <button id="fsDown" title="Smaller text" aria-label="Decrease text size">A−</button>
+      <button id="fsUp" title="Larger text" aria-label="Increase text size">A+</button>
+    </div>
+    <button class="btn" id="theme" aria-label="Toggle colour theme">◐ Theme</button>
+    <button class="btn" id="copyAll">⧉ Copy</button>
+    <button class="btn" id="dl">↓ .txt</button>
+    <button class="btn" id="printBtn">⎙ Print</button>
+  </div>
+
+  <div class="layout">
+    <aside class="glass">
+      <h2>Contents</h2>
+      <ul class="toc" id="toc"></ul>
+    </aside>
+
+    <main id="doc">
+
+      <section class="part glass" id="s1" data-title="Opening &amp; This Week" data-time="00:00">
+        <div class="part-head"><span class="tag">Opening</span></div>
+        <h3>Welcome to NEJM This Week</h3>
+        <p class="byline">Hosted by Dr. Michael Bierer</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="00:00">00:00</div><div>
+          <span class="spk">Speaker 1</span>
+          <p class="lead">Welcome to NEJM This Week. I'm Dr. Michael Bierer. This week we feature new research on colorectal cancer surveillance, metabolic acidosis in critical illness, pediatric leukemia, and food allergy prevention. We also review esophageal cancer and follow a case of severe nutritional deficiency and memory loss. Perspectives address AI and the clinical workforce, physician staffing in the Indian Health Service, human trafficking, and child health, and the enduring legacy of the HIV epidemic.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s2" data-title="Clinical Decisions: CRC Screening" data-time="00:00">
+        <div class="part-head"><span class="tag">Clinical Decisions</span></div>
+        <h3>Initial Screening for Colorectal Cancer</h3>
+        <p class="byline">A 46-year-old man presenting to primary care</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="00:00">00:00</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>A new Clinical Decisions explores the initial screening for colorectal cancer. A 46-year-old man comes to your primary care practice to discuss options for initiating colorectal cancer screening.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="00:51">00:51</div><div>
+          <p>Your patient has no relevant medical history. He has no known symptoms of inflammatory bowel disease, high-risk colorectal cancer genetic syndromes, or cystic fibrosis, and he takes no medications. There is no family history of colorectal or other gastrointestinal cancers, or advanced adenomas, in his first-degree relatives. You must decide whether to recommend colorectal cancer screening</p>
+        </div></div>
+        <div class="cue q"><div class="stamp" data-t="01:17">01:17</div><div>
+          <p>…with colonoscopy or with a stool-based test? What would you choose? Visit NEJM.org to vote.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s3" data-title="Colonoscopy Intervals After Adenoma Removal" data-time="01:17">
+        <div class="part-head"><span class="tag research">Original Article</span></div>
+        <h3>Colonoscopy Intervals and Colorectal Cancer Incidence After Adenoma Removal</h3>
+        <p class="byline">Rodrigo Jover, Hospital General Universitario Dr. Balmis, Alicante, Spain, and co-authors</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="01:17">01:17</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>After removal of polyps at colonoscopy, some patients are considered to be at high risk for new polyps or cancer. For such patients, current guidelines in the United States, as well as international guidelines, recommend frequent colonoscopies for surveillance, with the first surveillance colonoscopy at three years after polyp removal. However, the recommended intervals for surveillance are based on data from observational or small randomized studies, and the guidelines emphasize the need for long-term, high-quality randomized trials.</p>
+          <p>In this ongoing non-inferiority trial conducted in eight European countries, more than 10,000 patients with high-risk adenomas — defined as one or more adenoma with a diameter of 10 mm or greater,</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="02:32">02:32</div><div>
+          <p>high-grade dysplasia, or villous growth, or 3 to 10 adenomas of any kind — were randomly assigned to undergo a first colonoscopy at 5 years after polyp removal, or at the current guideline-recommended 3 years.</p>
+          <p>At this interim analysis of a 10-year trial, the incidence of colorectal cancer at 5 years was low and did not appear to be higher in the 5-year group than in the 3-year group. The interim analysis showed non-inferiority of 5-year surveillance to 3-year surveillance among patients with high-risk adenomas.</p>
+        </div></div>
+        <div class="key">
+          <div><dt>Design</dt><dd>Non-inferiority RCT, 8 European countries</dd></div>
+          <div><dt>Population</dt><dd>&gt;10,000 patients with high-risk adenomas</dd></div>
+          <div><dt>Comparison</dt><dd>5-year vs. 3-year first surveillance</dd></div>
+          <div><dt>Interim result</dt><dd>5-year interval non-inferior at 5 years</dd></div>
+        </div>
+        <div class="cue"><div class="stamp" data-t="02:32">02:32</div><div>
+          <p>Aasma Shaukat from the NYU Grossman School of Medicine, New York, and Theodore Levin from the Kaiser Permanente Division of Research, Pleasanton, California, write in an editorial that the results by Jover and co-authors should prompt reconsideration of the premise in post-polypectomy care that patients who are designated as high-risk uniformly benefit from surveillance at three years. The designation itself is broad.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="03:38">03:38</div><div>
+          <p>It groups together patients with one large adenoma, villous histologic features, high-grade dysplasia, or 3 to 10 adenomas. It has implied a level of future cancer risk that is sufficient to justify intensive follow-up. But the findings from the trial by Jover and co-authors suggest that the absolute risk of colorectal cancer after a high-quality baseline colonoscopy with complete excision of polyps is lower than the term "high risk" conveys. That conclusion is consistent with data from evolving literature.</p>
+        </div></div>
+        <div class="pull">
+          <p>For decades, surveillance after adenoma removal has been guided by a seemingly reasonable instinct: more vigilance must be better. This trial offers an important corrective. In contemporary practice, more frequent colonoscopy may detect more lesions without meaningfully reducing the incidence of colorectal cancer over five years.</p>
+          <span class="src">— Editorial, Shaukat &amp; Levin</span>
+        </div>
+        <div class="cue"><div class="stamp" data-t="04:39">04:39</div><div>
+          <p>Whether that conclusion will persist through the full 10 years of this study is uncertain, but these interim findings make one point clear already: surveillance policy must be determined not by habit or by fear of doing too little, but by evidence of what benefits patients.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s4" data-title="Sodium Bicarbonate in Metabolic Acidosis" data-time="04:39">
+        <div class="part-head"><span class="tag research">Original Article</span></div>
+        <h3>Sodium Bicarbonate for Critically Ill Adults with Metabolic Acidosis and Shock</h3>
+        <p class="byline">The SODa-BIC investigators and the ANZICS Clinical Trials Group</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="04:39">04:39</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Metabolic acidosis is common in critically ill patients and is associated with organ dysfunction and death. Sodium bicarbonate is used to correct acidemia, but its benefit in patients with metabolic acidosis who are receiving vasopressors has remained uncertain.</p>
+          <p>In this trial conducted in 55 ICUs across seven countries, 500 adult patients with metabolic acidosis who were receiving vasopressors were randomly assigned to receive either sodium bicarbonate or placebo, 5% dextrose.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="05:48">05:48</div><div>
+          <p>Sodium bicarbonate or placebo was infused for up to 5 hours, with the infusion rate adjusted for a target pH of at least 7.3 and base excess of at least 0 mmol per liter. The primary outcome was a major adverse kidney event, defined as death, use of renal replacement therapy, or persistent renal dysfunction within 30 days.</p>
+          <p>The use of sodium bicarbonate in these critically ill patients with metabolic acidosis receiving vasopressors did not lead to a lower risk of major adverse kidney events within 30 days than placebo.</p>
+          <p>In an editorial, Marlies Ostermann from Guy's and St Thomas' NHS Foundation Trust, London, and Deborah Cook from McMaster University, Hamilton, Ontario, Canada, write that the rigorous SODa-BIC trial adds to the growing evidence about sodium bicarbonate treatment. Whether, when, and in whom sodium bicarbonate therapy confers benefit for patients with metabolic acidosis remains under active investigation.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="06:55">06:55</div><div>
+          <p>As clinical evidence evolves, the SODa-BIC trial adds a compelling new chapter to the latest book. But the full story is not yet written.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s5" data-title="Blinatumomab in Pediatric ALL" data-time="06:55">
+        <div class="part-head"><span class="tag research">Original Article</span></div>
+        <h3>Blinatumomab for Replacing Chemotherapy in Pediatric Acute Lymphoblastic Leukemia</h3>
+        <p class="byline">Martin Schrappe, Christian-Albrechts University, Kiel, Germany, and co-authors</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="06:55">06:55</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Blinatumomab, a bispecific T-cell engager targeting the CD19 antigen on B cells, may offer an option to safely replace cycles of traditional chemotherapy in pediatric patients with newly diagnosed high-risk B-cell acute lymphoblastic leukemia.</p>
+          <p>In this trial, 709 children with high-risk B-cell ALL were randomly assigned to receive two cycles of blinatumomab or two cycles of chemotherapy after consolidation. Among these children, replacement of two cycles of highly toxic conventional chemotherapy with blinatumomab resulted in a significantly greater percentage of patients with event-free survival at four years.</p>
+        </div></div>
+        <div class="key">
+          <div><dt>Enrollment</dt><dd>709 children, high-risk B-cell ALL</dd></div>
+          <div><dt>Intervention</dt><dd>2 cycles blinatumomab vs. 2 cycles chemo</dd></div>
+          <div><dt>Primary gain</dt><dd>Higher 4-year event-free survival</dd></div>
+          <div><dt>Neurotoxicity</dt><dd>12% vs. 3.2%</dd></div>
+        </div>
+        <div class="cue"><div class="stamp" data-t="08:07">08:07</div><div>
+          <p>The side-effect profile was more favorable with blinatumomab than with intensive chemotherapy. Neurotoxic effects related to the trial treatment occurred in a significantly higher percentage of patients in the blinatumomab group than in the control group, 12% versus 3.2%.</p>
+          <p>In an editorial, Regina Myers and Stephen Hunger from the Children's Hospital of Philadelphia write that this large trial enrolled children with high-risk ALL, an optimal population for evaluating blinatumomab substitution, given their historically poor outcomes and pronounced burden of treatment-related toxic effects. In the current trial, the size of the effect of blinatumomab on event-free survival, hazard ratio 0.51, mirrored the results of trials in other populations, which further establishes blinatumomab as a new standard of care in B-cell ALL. The results pave the way for future efforts to replace toxic chemotherapy components with blinatumomab as first-line therapy in B-cell ALL.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s6" data-title="Maternal Diet &amp; Infant Allergy" data-time="09:21">
+        <div class="part-head"><span class="tag research">Original Article</span></div>
+        <h3>Trial of a Maternal Diet Rich in Eggs and Peanuts to Reduce Infant Allergy</h3>
+        <p class="byline">Debra Palmer, The Kids Research Institute Australia, Nedlands, and co-authors</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="09:21">09:21</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Immune responses leading to food allergy may develop early in life, potentially before the introduction of solid foods. Exposures to food allergens in utero and through breast milk have been proposed as a strategy to prevent food allergies in infants, but evidence from randomized trials is lacking.</p>
+          <p>In this trial, more than 2,100 pregnant women whose unborn child had at least two biologic family members with medically diagnosed allergic disease were randomly assigned to follow either a diet high in eggs and peanuts that included at least 6 eggs and 60 peanuts per week, or a standard egg and peanut diet that included no more than 3 eggs and 30 peanuts per week, from before 23 weeks' gestation until four months postnatally during lactation.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="10:29">10:29</div><div>
+          <p>The ingestion of high amounts of egg and peanut during pregnancy and lactation did not result in a significantly lower risk of the development of egg or peanut allergy in infants by one year of age than ingestion of low amounts of these foods.</p>
+          <p>Maria Jenmalm from Linköping University, Sweden, writes in an editorial that for clinicians the message is practical. Pregnant and lactating women who tolerate egg and peanut need not avoid these foods for allergy prevention. Equally, they should not feel obliged to consume high quantities of egg or peanut to protect their child. This message is especially important for families with strong allergic histories who may already have anxiety about infant allergy risk.</p>
+        </div></div>
+        <div class="pull">
+          <p>The trial supports counseling that is permissive rather than prescriptive.</p>
+          <span class="src">— Editorial, Maria Jenmalm</span>
+        </div>
+        <div class="cue"><div class="stamp" data-t="11:22">11:22</div><div>
+          <p>Maintain a nutritionally adequate, varied diet according to preference and tolerance, and focus prevention advice on timely introduction and ongoing inclusion of allergenic foods in the infant diet when developmentally appropriate. Prevention of food allergy remains an early-life priority, but this trial suggests that the actionable window is not enlarged simply by increasing maternal intake of eggs and peanuts.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s7" data-title="Review: Esophageal Cancer" data-time="11:22">
+        <div class="part-head"><span class="tag">Review Article</span></div>
+        <h3>Esophageal Cancer</h3>
+        <p class="byline">Shao-Hua Xie, Karolinska Institutet, Stockholm, and co-authors</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="11:22">11:22</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Cancer of the esophagus is the 13th most common cancer and the 7th leading cause of cancer-related death worldwide, resulting in approximately 500,000 deaths annually. Population-based 5-year survival has improved in recent decades, but rarely exceeds 20%. The main histologic types of esophageal cancer, adenocarcinoma and squamous cell carcinoma, have different incidence patterns.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="12:29">12:29</div><div>
+          <p>The past four decades have witnessed a rapidly increasing incidence of esophageal adenocarcinoma in many Western countries, especially among white men, and a decreasing incidence of esophageal squamous cell carcinoma. In contrast, the opposite is true for most other populations, in which esophageal squamous cell carcinoma remains the most frequent form. This review focuses on recent developments in the epidemiologic characteristics, risk factors, prevention, and clinical management of esophageal cancer.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s8" data-title="Case Record: Memory Loss &amp; Wasting" data-time="12:29">
+        <div class="part-head"><span class="tag case">Case Record of the MGH</span></div>
+        <h3>A 62-Year-Old Woman with Memory Loss, Anhedonia, and Temporal Wasting</h3>
+        <p class="byline">Sejal Shah and colleagues, Massachusetts General Hospital</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="12:29">12:29</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>A 62-year-old woman receiving treatment for metastatic breast cancer presented with a month of profound loss of appetite, altered taste, fatigue, and weight loss, followed by worsening memory and difficulty walking.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="13:31">13:31</div><div>
+          <p>Previously able to walk two to three miles, she became too tired and unsteady to walk more than a block and eventually needed walls and furniture for support. Her son noticed increasing confusion and short-term memory loss, and she became disengaged from activities she had enjoyed. Examination revealed temporal wasting, severe memory impairment, and confabulation.</p>
+          <p>Her rapid weight loss and poor oral intake raised concerns for thiamine deficiency, and repeat brain MRI showed abnormalities of the mammillary bodies consistent with Wernicke–Korsakoff syndrome. She received high-dose intravenous thiamine with some improvement in appetite and cognition, although memory impairment persisted after discharge.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s9" data-title="Perspective: AI &amp; the Clinical Workforce" data-time="13:31">
+        <div class="part-head"><span class="tag perspective">Perspective</span></div>
+        <h3>Artificial Intelligence and the Future of the Clinical Workforce</h3>
+        <p class="byline">Dhruv Khullar, Weill Cornell Medical College, New York</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="13:31">13:31</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Concerns about technology disrupting the work of clinicians have existed for decades, but they have intensified in recent years amid the growing sophistication of AI tools and their rapid adoption in health care.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="14:30">14:30</div><div>
+          <p>AI has increasingly outperformed clinicians on complex clinical tasks, and the federal government recently announced an initiative to develop agents that can autonomously provide care to patients. Some experts have predicted that AI will take over clinical tasks to such an extent that there will be fewer employment opportunities for clinicians, especially in specialties such as radiology, pathology, psychiatry, and primary care. Counter-arguments often emphasize technological, regulatory, and humanistic factors.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="15:20">15:20</div><div>
+          <p>It is possible, for example, that AI agents won't be as effective in the real world as they have been in benchmarking studies, that regulatory requirements will slow the implementation of AI tools or limit their applications, and that patients will continue to highly value empathic, relational care.</p>
+          <p>Although each of these considerations has merit, economic theory and history offer distinct and possibly more structural reasons to believe that in the long run, adoption of AI agents — even models capable of performing some forms of cognitive work — could lead to an expansion rather than a contraction of the clinical workforce. Developing a clearer sense of the range of possible futures for AI and the clinical workforce is an essential step in bringing about the future we want.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s10" data-title="Perspective: Indian Health Service Staffing" data-time="16:15">
+        <div class="part-head"><span class="tag perspective">Perspective</span></div>
+        <h3>A New Approach for the Indian Health Service: Academic Physician Staffing</h3>
+        <p class="byline">Matthew Tobey, Massachusetts General Hospital, Boston; Allison Kelliher, Association of American Indian Physicians, Oklahoma City</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="16:15">16:15</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>The Indian Health Service (IHS) provides health care to citizens of federally recognized American Indian and Alaska Native tribes, fulfilling a government responsibility established by means of treaties, laws, U.S. Supreme Court decisions, and other precedents. Nearly 2 million people, predominantly people living in rural, remote, and low-income areas, receive care at IHS hospitals and health centers.</p>
+          <p>In 2018, the Government Accountability Office reported regional IHS physician vacancy rates of 20 to 46 percent. One potentially scalable approach to addressing long-standing IHS physician shortages has received relatively little attention: staffing partnerships with academic medical centers (AMCs).</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="17:21">17:21</div><div>
+          <p>Pilot staffing partnerships between the IHS and AMCs were first launched in the mid-2010s, and since then additional IHS–AMC programs have been established. If today's IHS–AMC partnerships represent the first phase of a new approach to addressing IHS staffing shortages, these authors believe the time has come for a second phase focused on sustainability and scale.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s11" data-title="Perspective: Trafficking &amp; Child Health" data-time="17:21">
+        <div class="part-head"><span class="tag perspective">Perspective</span></div>
+        <h3>The Epstein Files Transparency Act and the Health of Trafficked Children</h3>
+        <p class="byline">Nicholas Peoples, Massachusetts General Hospital, Boston</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="17:21">17:21</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>Human trafficking is a complex power system that functions as both a proximate and distal cause of poor child health. Yet health systems' responses remain focused on identifying and treating individual victims after the greatest harms have already occurred, rather than partnering with communities and policymakers to address the structural drivers of exploitation. The Epstein Files Transparency Act, signed into U.S. law in November 2025, brought these tensions to the fore.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="18:38">18:38</div><div>
+          <p>Among the records that have been released are accounts of adolescent girls transported across jurisdictions and international borders, controlled by adults with financial and social power, and subjected to repeated sexual exploitation. In some cases, these minors interacted with health care systems where no one recognized their circumstances.</p>
+          <p>The Act offers a rare opportunity to identify perpetrators, pursue accountability and punishment, and thereby prevent further emboldening of child trafficking. However, given that policymakers vary in their willingness to investigate this global trafficking network and hold suspected perpetrators accountable, the medical and public health communities face a choice.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="19:41">19:41</div><div>
+          <p>Treat human trafficking as an unfortunate issue that lies outside its domain, or confront it as a health crisis that demands public health intervention.</p>
+        </div></div>
+      </section>
+
+      <section class="part glass" id="s12" data-title="Perspective: Legacy of the HIV Epidemic" data-time="19:41">
+        <div class="part-head"><span class="tag perspective">Perspective</span></div>
+        <h3>Honoring the Legacy of the HIV Epidemic</h3>
+        <p class="byline">Ofole Mgbako, NYC Health + Hospitals / Bellevue, New York</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="19:41">19:41</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>After decades of scientific progress, HIV is now a treatable illness, and many HIV prevention tools are available. Yet progress is stalling. In New York City, the incidence of new HIV infections has increased over the past two years, and more than 1,500 people with HIV die each year, with a third of those deaths being AIDS-related.</p>
+          <p>Our treatments are so effective today that these deaths are almost universally deaths of despair related to homelessness, or drug use, or mental illness, or to drowning under the weight of persistent stigma that keeps some patients from obtaining treatment. HIV has essentially been, and continues to be, an epidemic of inequity.</p>
+        </div></div>
+        <div class="cue"><div class="stamp" data-t="20:37">20:37</div><div>
+          <p>To make matters worse, HIV prevention and treatment programs have been subject to sustained attacks by the U.S. government for more than a year, including threats to Medicaid access and termination of more than $200 million in HIV-related research funding. And the author also sees an even greater threat to progress against the epidemic: fear. The fear of immigrant patients with HIV that coming to clinic for care may mean being arrested by ICE. The effects of fear on the rates of new HIV infections and related deaths are impossible to fully measure epidemiologically.</p>
+          <p>Clinicians and patients continue to grapple with the legacy of the HIV epidemic: the heavy losses, the creative activism that grew out of it, the lessons about public health, and the kind of dignified care patients deserve even in the absence of a cure. Yet our models of care have never revolved only around numbers.</p>
+        </div></div>
+        <div class="pull">
+          <p>They've been grounded in quiet, persistent courage — the capacity to see someone suffering and lean in rather than turn away. Fearlessness, and innovation, may be our greatest inheritance.</p>
+          <span class="src">— Perspective, Ofole Mgbako · 21:35</span>
+        </div>
+      </section>
+
+      <section class="part glass" id="s13" data-title="Images in Clinical Medicine &amp; Closing" data-time="21:35">
+        <div class="part-head"><span class="tag">Images in Clinical Medicine</span></div>
+        <h3>Late-Onset Pompe Disease &amp; Celiac Artery Dissection</h3>
+        <p class="byline">Closing remarks</p>
+        <hr class="rule">
+        <div class="cue"><div class="stamp" data-t="21:35">21:35</div><div>
+          <span class="spk">Speaker 1</span>
+          <p>In our Images in Clinical Medicine, a 54-year-old woman presented to the emergency department with progressive asthenia, falls, and dyspnea. Following physical examination and muscle biopsy, a diagnosis of late-onset Pompe disease — an autosomal recessive lysosomal disorder that manifests as a skeletal myopathy — was made.</p>
+          <p>In another image, a 72-year-old man with hypertension, hyperlipidemia, and a stable ascending aortic aneurysm presented with sudden-onset severe chest pain. CT angiography of the chest, abdomen, and pelvis showed a celiac artery dissection.</p>
+          <p>Read more from our issue at NEJM.org. Let us know what you think about our podcast. Any comments or suggestions may be sent to audio@NEJM.org. Thank you for listening.</p>
+        </div></div>
+      </section>
+
+      <footer class="end glass">
+        <p><strong>End of transcript</strong> · NEJM This Week</p>
+        <p>Full articles and editorials at <a href="https://www.nejm.org" target="_blank" rel="noopener">NEJM.org</a> · Feedback: audio@NEJM.org</p>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<button class="top glass" id="top" aria-label="Back to top">↑</button>
+<div class="toast glass" id="toast"></div>
+
+<script>
+(function(){
+  var doc = document.getElementById('doc');
+  var sections = Array.prototype.slice.call(doc.querySelectorAll('section.part'));
+  var toc = document.getElementById('toc');
+  var toast = document.getElementById('toast');
+
+  var faTranslations = {
+    "s1": [
+      "به «این هفته در NEJM» خوش آمدید. من دکتر مایکل بیرر هستم. این هفته پژوهش‌های تازه‌ای دربارهٔ پایش سرطان کولورکتال، اسیدوز متابولیک در بیماری بحرانی، لوسمی کودکان و پیشگیری از آلرژی غذایی ارائه می‌کنیم. همچنین سرطان مری را مرور می‌کنیم و موردی از کمبود شدید تغذیه‌ای و از دست دادن حافظه را دنبال خواهیم کرد. مقاله‌های دیدگاه به هوش مصنوعی و نیروی کار بالینی، تأمین پزشک در خدمات سلامت بومیان آمریکا، قاچاق انسان و سلامت کودکان، و میراث ماندگار همه‌گیری HIV می‌پردازند."
+    ],
+    "s2": [
+      "بخش تازهٔ «تصمیم‌های بالینی» به غربالگری اولیهٔ سرطان کولورکتال می‌پردازد. مردی ۴۶ ساله به مطب مراقبت‌های اولیهٔ شما مراجعه می‌کند تا دربارهٔ گزینه‌های آغاز غربالگری سرطان کولورکتال گفت‌وگو کند.",
+      "بیمار شما سابقهٔ پزشکی مرتبطی ندارد. هیچ نشانهٔ شناخته‌شده‌ای از بیماری التهابی روده، سندرم‌های ژنتیکی پرخطر سرطان کولورکتال یا فیبروز کیستیک ندارد و دارویی مصرف نمی‌کند. در بستگان درجه‌اول او سابقهٔ سرطان کولورکتال، دیگر سرطان‌های دستگاه گوارش یا آدنوم‌های پیشرفته وجود ندارد. باید تصمیم بگیرید که غربالگری سرطان کولورکتال را با کولونوسکوپی توصیه کنید یا با آزمایش مبتنی بر مدفوع. انتخاب شما چیست؟ برای رأی دادن به NEJM.org مراجعه کنید."
+    ],
+    "s3": [
+      "پس از برداشتن پولیپ‌ها در کولونوسکوپی، بعضی بیماران از نظر ایجاد پولیپ تازه یا سرطان پرخطر محسوب می‌شوند. برای این بیماران، راهنماهای فعلی آمریکا و راهنماهای بین‌المللی کولونوسکوپی‌های مکرر برای پایش را توصیه می‌کنند؛ نخستین کولونوسکوپی پایشی سه سال پس از برداشتن پولیپ انجام می‌شود. بااین‌حال، فاصله‌های توصیه‌شده بر داده‌های مطالعات مشاهده‌ای یا کارآزمایی‌های تصادفی کوچک استوارند و راهنماها بر نیاز به کارآزمایی‌های تصادفی طولانی‌مدت و باکیفیت تأکید دارند.",
+      "در این کارآزمایی در حال انجام با هدف بررسی عدم‌کمتری، در هشت کشور اروپایی، بیش از ۱۰٬۰۰۰ بیمار دارای آدنوم پرخطر به‌طور تصادفی به دو گروه تقسیم شدند تا نخستین کولونوسکوپی را پنج سال پس از برداشتن پولیپ یا در فاصلهٔ سه‌سالهٔ توصیه‌شده در راهنماهای فعلی انجام دهند. آدنوم پرخطر به وجود یک یا چند آدنوم با قطر حداقل ۱۰ میلی‌متر، دیسپلازی درجه‌بالا یا رشد پرزی، یا وجود ۳ تا ۱۰ آدنوم از هر نوع تعریف شد.",
+      "در این تحلیل میانی از یک کارآزمایی ده‌ساله، بروز سرطان کولورکتال در پنج سال پایین بود و به نظر نمی‌رسید در گروه پنج‌ساله بیش از گروه سه‌ساله باشد. تحلیل میانی نشان داد پایش پنج‌ساله در بیماران دارای آدنوم پرخطر نسبت به پایش سه‌ساله کم‌اثرتر نیست.",
+      "نکات کلیدی: طرح مطالعه، کارآزمایی تصادفی عدم‌کمتری در هشت کشور اروپایی؛ جمعیت، بیش از ۱۰٬۰۰۰ بیمار دارای آدنوم پرخطر؛ مقایسه، نخستین پایش پس از پنج سال در برابر سه سال؛ نتیجهٔ میانی، عدم‌کمتری فاصلهٔ پنج‌ساله در پایان پنج سال.",
+      "آسما شوکت از دانشکدهٔ پزشکی گروسمن دانشگاه نیویورک و تئودور لوین از بخش پژوهش کایزر پرمننته در پلزنتون کالیفرنیا، در سرمقاله‌ای می‌نویسند که نتایج جوور و همکاران باید موجب بازنگری در این فرض مراقبت پس از پولیپ‌برداری شود که همهٔ بیماران موسوم به پرخطر به یک اندازه از پایش سه‌ساله سود می‌برند. خود این عنوان دامنهٔ گسترده‌ای دارد.",
+      "این عنوان بیماران دارای یک آدنوم بزرگ، ویژگی‌های بافت‌شناختی پرزی، دیسپلازی درجه‌بالا یا ۳ تا ۱۰ آدنوم را در یک گروه قرار می‌دهد. این نام‌گذاری چنین القا کرده است که خطر سرطان آینده به حدی بالاست که پیگیری فشرده را توجیه می‌کند. اما یافته‌های کارآزمایی جوور و همکاران نشان می‌دهد خطر مطلق سرطان کولورکتال پس از کولونوسکوپی اولیهٔ باکیفیت همراه با برداشت کامل پولیپ‌ها، کمتر از چیزی است که اصطلاح «پرخطر» القا می‌کند. این نتیجه با داده‌های پژوهش‌های رو به گسترش همخوانی دارد.",
+      "شوکت و لوین در سرمقاله می‌نویسند: دهه‌هاست که پایش پس از برداشتن آدنوم بر یک برداشت ظاهراً منطقی استوار بوده است: مراقبت بیشتر باید بهتر باشد. این کارآزمایی اصلاح مهمی در این برداشت ایجاد می‌کند. در عملکرد امروزی، کولونوسکوپی مکررتر ممکن است ضایعات بیشتری را شناسایی کند، بدون اینکه بروز سرطان کولورکتال را طی پنج سال به‌شکلی معنادار کاهش دهد.",
+      "اینکه این نتیجه در تمام ده سال مطالعه پابرجا بماند نامشخص است، اما یافته‌های میانی همین حالا یک نکته را روشن می‌کنند: سیاست پایش باید بر شواهد سودمندی برای بیماران استوار باشد، نه بر عادت یا ترس از کم‌کاری."
+    ],
+    "s4": [
+      "اسیدوز متابولیک در بیماران بدحال شایع است و با اختلال عملکرد اندام‌ها و مرگ همراه است. بی‌کربنات سدیم برای اصلاح اسیدمی به کار می‌رود، اما سود آن در بیماران مبتلا به اسیدوز متابولیک که داروهای تنگ‌کنندهٔ عروق دریافت می‌کنند، نامشخص مانده است.",
+      "در این کارآزمایی در ۵۵ بخش مراقبت‌های ویژه در هفت کشور، ۵۰۰ بیمار بزرگسال مبتلا به اسیدوز متابولیک که داروهای تنگ‌کنندهٔ عروق دریافت می‌کردند، به‌طور تصادفی به دریافت بی‌کربنات سدیم یا دارونما، یعنی دکستروز ۵ درصد، تخصیص یافتند.",
+      "بی‌کربنات سدیم یا دارونما تا پنج ساعت انفوزیون شد و سرعت تزریق برای رسیدن به pH حداقل ۷٫۳ و مازاد باز حداقل صفر میلی‌مول در لیتر تنظیم شد. پیامد اصلی، وقوع یک رویداد نامطلوب عمدهٔ کلیوی بود که به‌صورت مرگ، استفاده از درمان جایگزینی کلیه یا اختلال پایدار عملکرد کلیه طی ۳۰ روز تعریف شد.",
+      "مصرف بی‌کربنات سدیم در این بیماران بدحال مبتلا به اسیدوز متابولیک که داروهای تنگ‌کنندهٔ عروق دریافت می‌کردند، در مقایسه با دارونما خطر رویدادهای نامطلوب عمدهٔ کلیوی را طی ۳۰ روز کاهش نداد.",
+      "مارلیس اوسترمان از مجموعهٔ بیمارستانی گایز و سنت توماس لندن و دبورا کوک از دانشگاه مک‌مستر در همیلتونِ انتاریوی کانادا، در سرمقاله‌ای می‌نویسند که کارآزمایی دقیق SODa-BIC به شواهد رو به افزایش دربارهٔ درمان با بی‌کربنات سدیم می‌افزاید. اینکه این درمان آیا سودمند است، چه زمانی سود دارد و برای کدام بیماران مبتلا به اسیدوز متابولیک مفید است، همچنان موضوع پژوهش فعال است.",
+      "هم‌زمان با تحول شواهد بالینی، کارآزمایی SODa-BIC فصل تازه و قابل‌توجهی به این مجموعهٔ شواهد می‌افزاید؛ اما داستان کامل هنوز نوشته نشده است."
+    ],
+    "s5": [
+      "بلیناتوموماب، یک عامل دوویژهٔ درگیرکنندهٔ سلول T که آنتی‌ژن CD19 روی سلول‌های B را هدف می‌گیرد، ممکن است گزینه‌ای برای جایگزینی ایمن دوره‌های شیمی‌درمانی متعارف در کودکان مبتلا به لوسمی لنفوبلاستیک حاد سلول B پرخطر و تازه‌تشخیص‌داده‌شده باشد.",
+      "در این کارآزمایی، ۷۰۹ کودک مبتلا به ALL سلول B پرخطر به‌طور تصادفی پس از مرحلهٔ تحکیم درمان، دو دوره بلیناتوموماب یا دو دوره شیمی‌درمانی دریافت کردند. جایگزینی دو دوره شیمی‌درمانی متعارف با سمیت بالا با بلیناتوموماب، درصد بیمارانی را که در چهار سال بقای بدون رویداد داشتند به‌طور معناداری افزایش داد.",
+      "نکات کلیدی: ۷۰۹ کودک مبتلا به ALL سلول B پرخطر؛ دو دوره بلیناتوموماب در برابر دو دوره شیمی‌درمانی؛ بقای بدون رویداد بیشتر در چهار سال؛ سمیت عصبی ۱۲ درصد در برابر ۳٫۲ درصد.",
+      "الگوی عوارض جانبی بلیناتوموماب در مقایسه با شیمی‌درمانی فشرده مطلوب‌تر بود. بااین‌حال، عوارض عصبی مرتبط با درمان مطالعه در درصد به‌طور معناداری بیشتری از بیماران گروه بلیناتوموماب رخ داد: ۱۲ درصد در برابر ۳٫۲ درصد در گروه شاهد.",
+      "رجینا مایرز و استیون هانگر از بیمارستان کودکان فیلادلفیا در سرمقاله‌ای می‌نویسند که این کارآزمایی بزرگ کودکان مبتلا به ALL پرخطر را وارد مطالعه کرد؛ با توجه به پیامدهای نامطلوب تاریخی و بار بالای سمیت ناشی از درمان، این جمعیت برای ارزیابی جایگزینی بلیناتوموماب بسیار مناسب است. در این کارآزمایی، اندازهٔ اثر بلیناتوموماب بر بقای بدون رویداد، با نسبت مخاطرهٔ ۰٫۵۱، مشابه نتایج کارآزمایی‌ها در جمعیت‌های دیگر بود و جایگاه آن را به‌عنوان استاندارد تازهٔ مراقبت در ALL سلول B بیشتر تثبیت می‌کند. این نتایج راه را برای تلاش‌های آینده جهت جایگزینی اجزای سمی شیمی‌درمانی با بلیناتوموماب در درمان خط اول ALL سلول B هموار می‌کند."
+    ],
+    "s6": [
+      "پاسخ‌های ایمنی منجر به آلرژی غذایی ممکن است در اوایل زندگی، حتی پیش از شروع غذاهای جامد، شکل بگیرند. مواجهه با آلرژن‌های غذایی در رحم و از طریق شیر مادر به‌عنوان راهبردی برای پیشگیری از آلرژی غذایی شیرخواران پیشنهاد شده است، اما شواهد کارآزمایی‌های تصادفی در این زمینه وجود نداشته است.",
+      "در این کارآزمایی، بیش از ۲٬۱۰۰ زن باردار که فرزند متولد‌نشدهٔ آنان دست‌کم دو عضو خانواده با نسبت زیستی و بیماری آلرژیک تشخیص‌داده‌شده توسط پزشک داشت، به‌طور تصادفی یکی از دو رژیم را دنبال کردند: رژیم پرمصرف شامل حداقل شش تخم‌مرغ و ۶۰ عدد بادام‌زمینی در هفته، یا رژیم معمول شامل حداکثر سه تخم‌مرغ و ۳۰ عدد بادام‌زمینی در هفته. رژیم از پیش از هفتهٔ ۲۳ بارداری آغاز شد و تا چهار ماه پس از زایمان در دورهٔ شیردهی ادامه یافت.",
+      "مصرف زیاد تخم‌مرغ و بادام‌زمینی در بارداری و شیردهی، در مقایسه با مصرف کم این خوراکی‌ها، خطر ایجاد آلرژی به تخم‌مرغ یا بادام‌زمینی را تا یک‌سالگی شیرخوار به‌طور معناداری کاهش نداد.",
+      "ماریا ینمالم از دانشگاه لینشوپینگ سوئد در سرمقاله‌ای می‌نویسد که پیام برای پزشکان کاربردی است. زنان باردار و شیردهی که تخم‌مرغ و بادام‌زمینی را تحمل می‌کنند، لازم نیست برای پیشگیری از آلرژی از این غذاها پرهیز کنند. به همان اندازه، نباید احساس کنند برای محافظت از فرزندشان موظف به مصرف مقدار زیاد این غذاها هستند. این پیام به‌ویژه برای خانواده‌های دارای سابقهٔ قوی آلرژی مهم است که ممکن است از قبل نگران خطر آلرژی شیرخوار باشند.",
+      "به گفتهٔ ماریا ینمالم، این کارآزمایی از مشاوره‌ای حمایت می‌کند که به خانواده حق انتخاب می‌دهد، نه اینکه دستور غذایی الزام‌آور تعیین کند.",
+      "رژیمی متنوع و از نظر تغذیه‌ای کافی، مطابق ترجیح و تحمل فرد، حفظ کنید و توصیه‌های پیشگیرانه را بر معرفی به‌موقع غذاهای آلرژی‌زا و ادامهٔ حضور آن‌ها در رژیم شیرخوار، هنگامی که از نظر رشد آماده است، متمرکز کنید. پیشگیری از آلرژی غذایی همچنان اولویتی در اوایل زندگی است، اما این کارآزمایی نشان می‌دهد صرفاً با افزایش مصرف تخم‌مرغ و بادام‌زمینی مادر، بازهٔ زمانی مؤثر برای مداخله گسترش نمی‌یابد."
+    ],
+    "s7": [
+      "سرطان مری سیزدهمین سرطان شایع و هفتمین علت مرگ ناشی از سرطان در جهان است و سالانه حدود ۵۰۰٬۰۰۰ مرگ ایجاد می‌کند. بقای پنج‌ساله در مطالعات جمعیتی طی دهه‌های اخیر بهتر شده، اما به‌ندرت از ۲۰ درصد فراتر می‌رود. انواع اصلی بافت‌شناختی سرطان مری، یعنی آدنوکارسینوم و کارسینوم سلول سنگفرشی، الگوهای بروز متفاوتی دارند.",
+      "در چهار دههٔ گذشته، بروز آدنوکارسینوم مری در بسیاری از کشورهای غربی، به‌ویژه در مردان سفیدپوست، به‌سرعت افزایش یافته و بروز کارسینوم سلول سنگفرشی مری کاهش یافته است. در مقابل، در بیشتر جمعیت‌های دیگر وضعیت برعکس است و کارسینوم سلول سنگفرشی همچنان شایع‌ترین شکل سرطان مری است. این مقالهٔ مروری بر تحولات اخیر در ویژگی‌های همه‌گیرشناختی، عوامل خطر، پیشگیری و مدیریت بالینی سرطان مری تمرکز دارد."
+    ],
+    "s8": [
+      "زنی ۶۲ ساله که برای سرطان پستان متاستاتیک تحت درمان بود، با یک ماه کاهش شدید اشتها، تغییر حس چشایی، خستگی و کاهش وزن مراجعه کرد که به دنبال آن حافظه‌اش بدتر شده و راه رفتن برایش دشوار شده بود.",
+      "او قبلاً می‌توانست دو تا سه مایل راه برود، اما خستگی و بی‌ثباتی به حدی رسید که بیش از یک بلوک نمی‌توانست راه برود و سرانجام برای حفظ تعادل به دیوارها و اثاثیه تکیه می‌کرد. پسرش متوجه افزایش گیجی و کاهش حافظهٔ کوتاه‌مدت او شد و بیمار از فعالیت‌هایی که قبلاً لذت می‌برد کناره گرفت. معاینه، تحلیل‌رفتگی عضلات ناحیهٔ گیجگاهی، اختلال شدید حافظه و خاطره‌سازی کاذب را نشان داد.",
+      "کاهش سریع وزن و دریافت خوراکی ناکافی، نگرانی دربارهٔ کمبود تیامین را برانگیخت. MRI تکراری مغز ناهنجاری‌هایی در اجسام پستانی نشان داد که با سندرم ورنیکه–کورساکف سازگار بود. بیمار تیامین وریدی با دوز بالا دریافت کرد و اشتها و عملکرد شناختی او تا حدی بهتر شد، هرچند اختلال حافظه پس از ترخیص باقی ماند."
+    ],
+    "s9": [
+      "نگرانی دربارهٔ مختل شدن کار پزشکان و دیگر درمانگران به‌وسیلهٔ فناوری دهه‌هاست وجود دارد، اما در سال‌های اخیر با پیشرفته‌تر شدن ابزارهای هوش مصنوعی و پذیرش سریع آن‌ها در مراقبت سلامت شدت گرفته است.",
+      "هوش مصنوعی در وظایف پیچیدهٔ بالینی به‌طور فزاینده‌ای عملکرد بهتری از درمانگران نشان داده است و دولت فدرال اخیراً طرحی برای توسعهٔ عامل‌هایی اعلام کرده که بتوانند به‌صورت مستقل به بیماران مراقبت ارائه دهند. برخی کارشناسان پیش‌بینی کرده‌اند هوش مصنوعی تا حدی وظایف بالینی را بر عهده خواهد گرفت که فرصت‌های شغلی برای درمانگران، به‌ویژه در رادیولوژی، آسیب‌شناسی، روان‌پزشکی و مراقبت‌های اولیه، کاهش می‌یابد. استدلال‌های مخالف اغلب بر عوامل فناورانه، مقرراتی و انسانی تأکید می‌کنند.",
+      "برای مثال، ممکن است عامل‌های هوش مصنوعی در دنیای واقعی به اندازهٔ مطالعات ارزیابی معیار مؤثر نباشند؛ الزامات مقرراتی اجرای ابزارهای هوش مصنوعی را کند یا کاربردهایشان را محدود کنند؛ و بیماران همچنان برای مراقبت همدلانه و مبتنی بر رابطه ارزش زیادی قائل باشند.",
+      "هرچند هر یک از این ملاحظات موجه است، نظریه و تاریخ اقتصاد دلایل متفاوت و شاید ساختاری‌تری برای این باور ارائه می‌کنند که پذیرش عامل‌های هوش مصنوعی در بلندمدت، حتی مدل‌هایی که قادر به انجام برخی شکل‌های کار شناختی‌اند، می‌تواند به گسترش نیروی کار بالینی منجر شود، نه کوچک‌تر شدن آن. دستیابی به درکی روشن‌تر از طیف آینده‌های ممکن برای هوش مصنوعی و نیروی کار بالینی، گامی ضروری برای ساختن آیندهٔ مطلوب ماست."
+    ],
+    "s10": [
+      "خدمات سلامت بومیان آمریکا (IHS) به شهروندان قبایل سرخ‌پوست آمریکایی و بومی آلاسکا که دولت فدرال آن‌ها را به رسمیت می‌شناسد، مراقبت سلامت ارائه می‌کند. این خدمات مسئولیتی دولتی را انجام می‌دهد که بر اساس معاهدات، قوانین، آرای دیوان عالی آمریکا و دیگر سوابق حقوقی شکل گرفته است. نزدیک به دو میلیون نفر، عمدتاً ساکنان مناطق روستایی، دورافتاده و کم‌درآمد، در بیمارستان‌ها و مراکز سلامت IHS مراقبت دریافت می‌کنند.",
+      "در سال ۲۰۱۸، دفتر پاسخ‌گویی دولت گزارش کرد که نرخ جایگاه‌های خالی پزشک در مناطق مختلف IHS بین ۲۰ تا ۴۶ درصد است. یکی از راهکارهای بالقوه قابل‌گسترش برای رفع کمبود دیرینهٔ پزشک در این خدمات، نسبتاً کم مورد توجه قرار گرفته است: همکاری با مراکز پزشکی دانشگاهی برای تأمین نیروی انسانی.",
+      "همکاری‌های آزمایشی تأمین نیرو میان IHS و مراکز پزشکی دانشگاهی نخستین بار در میانهٔ دههٔ ۲۰۱۰ آغاز شد و پس از آن برنامه‌های بیشتری ایجاد شده‌اند. اگر همکاری‌های امروزی مرحلهٔ اول رویکردی تازه برای رفع کمبود نیروی IHS باشند، نویسندگان معتقدند زمان آغاز مرحلهٔ دوم، با تمرکز بر پایداری و گسترش مقیاس، فرا رسیده است."
+    ],
+    "s11": [
+      "قاچاق انسان نظام پیچیده‌ای از قدرت است که هم به‌صورت مستقیم و هم از مسیر عوامل زمینه‌ای، موجب آسیب به سلامت کودکان می‌شود. بااین‌حال، پاسخ نظام‌های سلامت همچنان بر شناسایی و درمان تک‌تک قربانیان پس از وقوع شدیدترین آسیب‌ها متمرکز است، به‌جای آنکه با جوامع و سیاست‌گذاران برای مقابله با عوامل ساختاری بهره‌کشی همکاری کند. قانون شفافیت پرونده‌های اپستین، که در نوامبر ۲۰۲۵ در آمریکا به امضا رسید و قانون شد، این تنش‌ها را برجسته کرد.",
+      "در میان اسناد منتشرشده، روایت‌هایی از دختران نوجوان وجود دارد که میان حوزه‌های قضایی و از مرزهای بین‌المللی منتقل شده‌اند، تحت کنترل بزرگسالان دارای قدرت مالی و اجتماعی قرار گرفته‌اند و بارها مورد بهره‌کشی جنسی واقع شده‌اند. در برخی موارد، این افراد زیر سن قانونی با نظام‌های مراقبت سلامت تماس داشته‌اند، اما کسی وضعیتشان را تشخیص نداده است.",
+      "این قانون فرصتی نادر برای شناسایی مرتکبان، پیگیری پاسخ‌گویی و مجازات، و در نتیجه جلوگیری از جسورتر شدن عاملان قاچاق کودکان فراهم می‌کند. بااین‌حال، ازآنجاکه تمایل سیاست‌گذاران به بررسی این شبکهٔ جهانی قاچاق و پاسخ‌گو کردن مظنونان متفاوت است، جامعهٔ پزشکی و بهداشت عمومی با یک انتخاب روبه‌روست.",
+      "قاچاق انسان را مسئله‌ای تأسف‌بار و خارج از حوزهٔ خود بداند، یا با آن به‌عنوان بحرانی سلامت‌محور روبه‌رو شود که مداخلهٔ بهداشت عمومی می‌طلبد."
+    ],
+    "s12": [
+      "پس از دهه‌ها پیشرفت علمی، HIV اکنون بیماری قابل‌درمانی است و ابزارهای بسیاری برای پیشگیری از آن در دسترس است. بااین‌حال، روند پیشرفت در حال توقف است. در شهر نیویورک، بروز عفونت‌های تازهٔ HIV طی دو سال گذشته افزایش یافته و هر سال بیش از ۱٬۵۰۰ نفر از افراد دارای HIV جان می‌بازند؛ یک‌سوم این مرگ‌ها مرتبط با ایدز است.",
+      "درمان‌های امروزی ما آن‌قدر مؤثرند که تقریباً همهٔ این مرگ‌ها، مرگ‌های ناشی از ناامیدیِ مرتبط با بی‌خانمانی، مصرف مواد یا بیماری روانی‌اند، یا از فرورفتن زیر بار انگ مداومی ناشی می‌شوند که برخی بیماران را از دریافت درمان بازمی‌دارد. HIV در اصل همه‌گیری نابرابری بوده و همچنان هست.",
+      "بدتر آنکه برنامه‌های پیشگیری و درمان HIV بیش از یک سال است با حملات مستمر دولت آمریکا روبه‌رو شده‌اند؛ از جمله تهدید دسترسی به مدیکید و قطع بیش از ۲۰۰ میلیون دلار بودجهٔ پژوهش مرتبط با HIV. نویسنده تهدیدی حتی بزرگ‌تر برای پیشرفت در مقابله با این همه‌گیری می‌بیند: ترس. ترس بیماران مهاجر دارای HIV از اینکه مراجعه به درمانگاه برای مراقبت ممکن است به بازداشت به‌دست ادارهٔ مهاجرت و اجرای گمرک آمریکا (ICE) منجر شود. سنجش کامل اثر ترس بر نرخ عفونت‌های تازهٔ HIV و مرگ‌های مرتبط، از نظر همه‌گیرشناختی ممکن نیست.",
+      "درمانگران و بیماران همچنان با میراث همه‌گیری HIV دست‌وپنجه نرم می‌کنند: تلفات سنگین، کنشگری خلاقانه‌ای که از آن برخاست، درس‌های بهداشت عمومی و مراقبت محترمانه‌ای که بیماران حتی در نبود درمان قطعی سزاوار آن هستند. بااین‌حال، الگوهای مراقبت ما هرگز فقط حول اعداد نچرخیده‌اند.",
+      "اوفوله امگباکو در مقالهٔ دیدگاه می‌نویسد: این الگوها بر شجاعتی آرام و مداوم استوار بوده‌اند؛ توانایی دیدن رنج دیگری و نزدیک شدن به او، به‌جای روی برگرداندن. بی‌باکی و نوآوری شاید بزرگ‌ترین میراث ما باشند."
+    ],
+    "s13": [
+      "در بخش «تصاویر در پزشکی بالینی»، زنی ۵۴ ساله با ضعف پیشرونده، زمین‌خوردن و تنگی نفس به اورژانس مراجعه کرد. پس از معاینهٔ جسمی و نمونه‌برداری عضله، بیماری پومپه با شروع دیررس تشخیص داده شد؛ یک اختلال لیزوزومی اتوزومال مغلوب که به‌صورت بیماری عضلات اسکلتی بروز می‌کند.",
+      "در تصویر دیگری، مردی ۷۲ ساله با پرفشاری خون، چربی خون بالا و آنوریسم پایدار آئورت صعودی، با درد شدید و ناگهانی قفسهٔ سینه مراجعه کرد. سی‌تی آنژیوگرافی قفسهٔ سینه، شکم و لگن، دیسکسیون شریان سلیاک را نشان داد.",
+      "مطالب بیشتری از این شماره را در NEJM.org بخوانید. نظرتان را دربارهٔ پادکست با ما در میان بگذارید. می‌توانید نظرها و پیشنهادها را به audio@NEJM.org بفرستید. از اینکه شنونده بودید سپاسگزاریم."
+    ]
+  };
+
+  sections.forEach(function(s){
+    var head = s.querySelector('.part-head');
+    var rule = s.querySelector('.rule');
+    if (!head || !rule || !faTranslations[s.id]) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn translate-btn';
+    btn.lang = 'fa';
+    btn.dir = 'rtl';
+    btn.textContent = 'ترجمه فارسی';
+    btn.setAttribute('aria-expanded', 'false');
+    var panel = document.createElement('div');
+    panel.className = 'translation';
+    panel.id = s.id + '-fa';
+    panel.hidden = true;
+    panel.lang = 'fa';
+    panel.dir = 'rtl';
+    btn.setAttribute('aria-controls', panel.id);
+    var heading = document.createElement('h4');
+    heading.textContent = 'ترجمهٔ فارسی';
+    panel.appendChild(heading);
+    faTranslations[s.id].forEach(function(paragraph){
+      var text = document.createElement('p');
+      text.textContent = paragraph;
+      panel.appendChild(text);
+    });
+    btn.addEventListener('click', function(){
+      var shown = panel.hidden;
+      panel.hidden = !shown;
+      btn.setAttribute('aria-expanded', String(shown));
+      btn.textContent = shown ? 'پنهان کردن ترجمه' : 'ترجمه فارسی';
+    });
+    head.appendChild(btn);
+    rule.insertAdjacentElement('afterend', panel);
+  });
+
+  // ---------- table of contents ----------
+  sections.forEach(function(s){
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + s.id;
+    a.innerHTML = '<span class="t">' + s.dataset.time + '</span><span>' + s.dataset.title + '</span>';
+    li.appendChild(a);
+    toc.appendChild(li);
+  });
+  var links = Array.prototype.slice.call(toc.querySelectorAll('a'));
+
+  function setActive(id){
+    links.forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+  }
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) setActive(e.target.id);
+      });
+    }, { rootMargin: '-18% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function(s){ io.observe(s); });
+  }
+
+  // ---------- reading progress + back to top ----------
+  var prog = document.getElementById('prog');
+  var topBtn = document.getElementById('top');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    prog.style.width = pct + '%';
+    topBtn.classList.toggle('show', h.scrollTop > 600);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  topBtn.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // ---------- toast ----------
+  var tmr;
+  function say(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(tmr);
+    tmr = setTimeout(function(){ toast.classList.remove('show'); }, 1700);
+  }
+
+  // ---------- theme ----------
+  var themeBtn = document.getElementById('theme');
+  themeBtn.addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', cur);
+    say(cur === 'light' ? 'Light theme' : 'Dark theme');
+  });
+
+  // ---------- font size ----------
+  var size = 17;
+  function applySize(){
+    document.documentElement.style.setProperty('--fs', size + 'px');
+  }
+  document.getElementById('fsUp').addEventListener('click', function(){
+    size = Math.min(23, size + 1); applySize();
+  });
+  document.getElementById('fsDown').addEventListener('click', function(){
+    size = Math.max(14, size - 1); applySize();
+  });
+
+  // ---------- plain text export ----------
+  function plainText(){
+    var out = ['NEJM THIS WEEK — TRANSCRIPT', ''];
+    sections.forEach(function(s){
+      var h = s.querySelector('h3');
+      var by = s.querySelector('.byline');
+      out.push('== ' + (h ? h.textContent.trim() : '') + ' ==');
+      if (by) out.push(by.textContent.trim());
+      out.push('');
+      Array.prototype.slice.call(s.querySelectorAll('.cue')).forEach(function(c){
+        var t = c.querySelector('.stamp');
+        var ps = Array.prototype.slice.call(c.querySelectorAll('p'));
+        ps.forEach(function(p, i){
+          var pre = (i === 0 && t) ? '[' + t.textContent.trim() + '] ' : '';
+          out.push(pre + p.textContent.replace(/\s+/g, ' ').trim());
+        });
+        out.push('');
+      });
+    });
+    return out.join('\n');
+  }
+
+  document.getElementById('copyAll').addEventListener('click', function(){
+    var txt = plainText();
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ say('Transcript copied'); },
+                                            function(){ say('Copy blocked by browser'); });
+    } else {
+      say('Clipboard unavailable');
+    }
+  });
+
+  document.getElementById('dl').addEventListener('click', function(){
+    var blob = new Blob([plainText()], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'nejm-this-week-transcript.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+    say('Downloading .txt');
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+
+  // ---------- timestamp copy ----------
+  doc.addEventListener('click', function(e){
+    var st = e.target.closest ? e.target.closest('.stamp') : null;
+    if (!st) return;
+    var sec = st.closest('section.part');
+    var ref = st.dataset.t + (sec ? ' — ' + sec.dataset.title : '');
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ref);
+      say('Copied: ' + ref);
+    } else {
+      say(ref);
+    }
+  });
+
+  // ---------- search with highlighting ----------
+  var paras = Array.prototype.slice.call(doc.querySelectorAll('.cue p, .pull p, h3, .byline'));
+  paras.forEach(function(p){ p.dataset.orig = p.innerHTML; });
+
+  var input = document.getElementById('q');
+  var cnt = document.getElementById('cnt');
+  var marks = [];
+  var idx = -1;
+
+  function clearMarks(){
+    paras.forEach(function(p){
+      if (p.innerHTML !== p.dataset.orig) p.innerHTML = p.dataset.orig;
+    });
+    marks = [];
+    idx = -1;
+  }
+
+  function esc(s){ return s.replace(/[.*+?^$()|[\]\\]/g, '\\$&'); }
+
+  function run(){
+    var term = input.value.trim();
+    clearMarks();
+    if (term.length < 2){
+      cnt.textContent = '';
+      sections.forEach(function(s){ s.style.display = ''; });
+      return;
+    }
+    var re = new RegExp(esc(term), 'gi');
+    var total = 0;
+
+    paras.forEach(function(p){
+      var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null);
+      var nodes = [];
+      var n;
+      while ((n = walker.nextNode())) nodes.push(n);
+      nodes.forEach(function(node){
+        var txt = node.nodeValue;
+        if (!re.test(txt)) return;
+        re.lastIndex = 0;
+        var frag = document.createDocumentFragment();
+        var last = 0, m;
+        while ((m = re.exec(txt)) !== null){
+          if (m.index > last) frag.appendChild(document.createTextNode(txt.slice(last, m.index)));
+          var mk = document.createElement('mark');
+          mk.textContent = m[0];
+          frag.appendChild(mk);
+          last = m.index + m[0].length;
+          total++;
+          if (m[0].length === 0) re.lastIndex++;
+        }
+        if (last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+      });
+    });
+
+    marks = Array.prototype.slice.call(doc.querySelectorAll('mark'));
+    cnt.textContent = total ? '1/' + total : '0';
+    if (total){
+      idx = 0;
+      focusMark();
+    }
+    sections.forEach(function(s){
+      s.style.display = s.querySelector('mark') ? '' : 'none';
+    });
+  }
+
+  function focusMark(){
+    marks.forEach(function(m){ m.classList.remove('cur'); });
+    var m = marks[idx];
+    if (!m) return;
+    m.classList.add('cur');
+    m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cnt.textContent = (idx + 1) + '/' + marks.length;
+  }
+
+  var deb;
+  input.addEventListener('input', function(){
+    clearTimeout(deb);
+    deb = setTimeout(run, 220);
+  });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && marks.length){
+      e.preventDefault();
+      idx = e.shiftKey ? (idx - 1 + marks.length) % marks.length : (idx + 1) % marks.length;
+      focusMark();
+    }
+    if (e.key === 'Escape'){
+      input.value = '';
+      run();
+      input.blur();
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+})();
+</script>
+</body>
+</html>
